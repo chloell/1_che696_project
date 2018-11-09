@@ -9,7 +9,8 @@ import unittest
 from contextlib import contextmanager
 from io import StringIO
 
-from 1_che696_project import main
+#from matcalc import canvas
+from matcalc import main
 
 
 class TestQuote(unittest.TestCase):
