@@ -81,11 +81,12 @@ def parse_cmdline(argv):
     #                     default=DEF_IRATE_FILE, type=read_input_rates)
     #parser.add_argument("-n", "--no_attribution", help="Whether to include attribution",
                         # action='store_false')
-    parser.add_argument("-s", "--solver", choices=(("-j", "--jacobi"), ("-g", "--gauss"), ("-s","--siedel")),
-                        help="Use these options to help you choose a solver", default="-j", action='store_int')
-    parser.add_argument("A", help="This is the main A matrix. Use numpy array np.array() to create this",
+    parser.add_argument("-s", "--solver", choices=("j","g", "s"),
+                        help="Use these options to help you choose a solver: j for Jacobi, g for Gauss, s for Gauss-Siedel. Jacobi is the default.",
+                        default="j")
+    parser.add_argument("A", help="This is the main A matrix, as in Ax=B. Use numpy array np.array() to create this. Make sure that the number of columns in this matrix A are the same as the number of rows in matrix B.",
                         action='store_array')
-    parser.add_argument("B", help="This is the answer B matrix. Use numpy array np.array() to create this",
+    parser.add_argument("B", help="This is the answer B matrix, as in Ax=B. Use numpy array np.array() to create this. Make sure that the number of columns in this matrix A are the same as the number of rows in matrix B.",
                         action='store_array')
 
     args = None

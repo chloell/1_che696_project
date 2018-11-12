@@ -102,4 +102,5 @@ ENV/
 .mypy_cache/
 
 #IDEA files
-/idea/*
+.idea/
+1_che_696_project/.idea/
