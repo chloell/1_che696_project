@@ -80,13 +80,13 @@ def parse_cmdline(argv):
         def __call__(self, parser, namespace, values, option_string=None):
             values = values.split(';')
             rows = len(values)
-            cols = int((len(values[0])-1)/2)
             m = values[0].split(',')
             i = 1
             while i < rows:
                 n = values[i].split(',')
                 m = np.vstack((m,n))
                 i += 1
+            rows, cols = m.shape
             #now " m" is the matrix that has everything in terms of a string
             # to convert everything to a string:
             newA = np.zeros((rows, cols))
@@ -101,7 +101,6 @@ def parse_cmdline(argv):
                 values = newA
             else:
                 values = newB
-
             return super().__call__(parser, namespace, values, option_string)
 
     # initialize the parser object:
@@ -113,9 +112,9 @@ def parse_cmdline(argv):
     parser.add_argument("-s", "--solver", choices=("j","g", "s"),
                         help="Use these options to help you choose a solver: j for Jacobi, g for Gauss, s for Gauss-Siedel. Jacobi is the default.",
                         default="j")
-    parser.add_argument("A", help="This is the main A matrix, as in Ax=B. Format as: 1,2,3,4,5,6,7,8,9,3 to create this, where 3 (the last number) is the number of rows in the matrix. Make sure that the number of columns in this matrix A are the same as the number of rows in matrix B.",
+    parser.add_argument("A", help="This is the main A matrix, as in Ax=B. Format as: '1,2,3;4,5,6;7,8,9' to create this, where ; separates the rows and , separates the columns. Make sure that the number of columns in this matrix A are the same as the number of rows in matrix B.",
                         action=Store_as_array)
-    parser.add_argument("B", help="This is the answer B matrix, as in Ax=B.  Format as: 1,2,3,3 to create this, where 3 (the last number) is the number of rows in the matrix. Make sure that the number of rows in this matrix A are the same as the number of columns in matrix A.",
+    parser.add_argument("B", help="This is the answer B matrix, as in Ax=B.  Format as: '1;2;3' to create this, where ; separates the rows. Make sure that the number of rows in this matrix A are the same as the number of columns in matrix A.",
                         action=Store_as_array)
 
     args = None
@@ -125,8 +124,8 @@ def parse_cmdline(argv):
         assert isinstance(args.A, np.ndarray)
         assert isinstance(args.B, np.ndarray)
     except TypeError as t:
-        #warning("Type of values stored in A and B arrays are not the same:", t)
-        #parser.print_help()
+        warning("Type of values stored in A and B arrays are not the same:", t)
+        parser.print_help()
         return args, 2
 
     # try:
