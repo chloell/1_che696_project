@@ -75,6 +75,12 @@ def parse_cmdline(argv):
     if argv is None:
         argv = sys.argv[1:]
 
+    #from Stackoverflow.com suggests:
+    class Store_as_array(argparse._StoreAction):
+        def __call__(self, parser, namespace, values, option_string=None):
+            values = np.array(values)
+            return super().__call__(parser, namespace, values, option_string)
+
     # initialize the parser object:
     parser = argparse.ArgumentParser()
     # parser.add_argument("-i", "--input_rates", help="The location of the input rates file",
@@ -85,9 +91,9 @@ def parse_cmdline(argv):
                         help="Use these options to help you choose a solver: j for Jacobi, g for Gauss, s for Gauss-Siedel. Jacobi is the default.",
                         default="j")
     parser.add_argument("A", help="This is the main A matrix, as in Ax=B. Use numpy array np.array() to create this. Make sure that the number of columns in this matrix A are the same as the number of rows in matrix B.",
-                        action='store_array')
+                        action=Store_as_array)
     parser.add_argument("B", help="This is the answer B matrix, as in Ax=B. Use numpy array np.array() to create this. Make sure that the number of columns in this matrix A are the same as the number of rows in matrix B.",
-                        action='store_array')
+                        action=Store_as_array)
 
     args = None
     try:
