@@ -13,7 +13,7 @@ from io import StringIO
 from a_che696_project.matcalc import main, parse_cmdline
 
 
-class TestQuote(unittest.TestCase):
+class TestProject(unittest.TestCase):
     def testNoArgs(self):
         test_input = []
         main(test_input)
@@ -28,19 +28,28 @@ class TestQuote(unittest.TestCase):
             self.assertTrue("Using the Gauss method" in output)
 
     def testNotDiagDomMatrix(self):
-        test_input = ["A"]
+        test_input = ['1,1,1;2,3,5;4,0,5', '1;2;3']
         parse_cmdline(test_input)
         with capture_stdout(main, test_input) as output:
-            pass
+            self.assertTrue("Matrix must be diagonally dominant" in output)
 
     def testJacobi(self):
-        pass
+        test_input = ['5,-2,3;-3,9,1;2,-1,-7' '1;2;3']
+        parse_cmdline(test_input)
+        with capture_stdout(main, test_input) as output:
+            self.assertTrue("[ 0.57749612  0.45105771 -0.32800935]" in output)
 
     def testGauss(self):
-        pass
+        test_input = ["-s g '5,-2,3;-3,9,1;2,-1,-7' '1;2;3'"]
+        parse_cmdline(test_input)
+        with capture_stdout(main, test_input) as output:
+            self.assertTrue("[ 0.57749612  0.45105771 -0.32800935]" in output)
 
     def testSiedel(self):
-        pass
+        test_input = ["-s s '5,-2,3;-3,9,1;2,-1,-7' '1;2;3'"]
+        parse_cmdline(test_input)
+        with capture_stdout(main, test_input) as output:
+            self.assertTrue("[ 0.5776533   0.45030048 -0.32795644]" in output)
 
 
 # Utility functions

@@ -113,9 +113,9 @@ def diagonally_dominant_check(A):
     max_value = np.zeros(row)
     verdict = True # Assume True until proven "guilty"/ False
     for i in range(row):
-        max_value[i] = A[i,i]
+        max_value[i] = abs(A[i,i])
         for j in range(col):
-            if A[i,j] > max_value[i]:
+            if abs(A[i,j]) > max_value[i]:
                 max_value[i] = 999
 
     if 999 in max_value:
