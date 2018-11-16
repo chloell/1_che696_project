@@ -10,7 +10,7 @@ from contextlib import contextmanager
 from io import StringIO
 
 #from matcalc import canvas
-from matcalc import main
+from a_che696_project.matcalc import main, parse_cmdline
 
 
 class TestQuote(unittest.TestCase):
@@ -18,14 +18,29 @@ class TestQuote(unittest.TestCase):
         test_input = []
         main(test_input)
         with capture_stdout(main, test_input) as output:
-            self.assertTrue("Henry David Thoreau" in output)
+            self.assertTrue("Using the" in output)
 
 
-    def testNoAttribution(self):
-        test_input = ["-n"]
+    def testNoSolver(self):
+        test_input = []
         main(test_input)
         with capture_stdout(main, test_input) as output:
-            self.assertFalse("Henry David Thoreau" in output)
+            self.assertTrue("Using the Gauss method" in output)
+
+    def testNotDiagDomMatrix(self):
+        test_input = ["A"]
+        parse_cmdline(test_input)
+        with capture_stdout(main, test_input) as output:
+            pass
+
+    def testJacobi(self):
+        pass
+
+    def testGauss(self):
+        pass
+
+    def testSiedel(self):
+        pass
 
 
 # Utility functions
@@ -40,3 +55,13 @@ def capture_stdout(command, *args, **kwargs):
     sys.stdout.seek(0)
     yield sys.stdout.read()
     sys.stdout = out
+
+@contextmanager
+def capture_stderr(command, *args, **kwargs):
+    # pycharm doesn't know six very well, so ignore the false warning
+    # noinspection PyCallingNonCallable
+    err, sys.stderr = sys.stderr, StringIO()
+    command(*args, **kwargs)
+    sys.stderr.seek(0)
+    yield sys.stderr.read()
+    sys.stderr = err

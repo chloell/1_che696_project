@@ -14,6 +14,36 @@ import numpy as np
 import math
 
 
+#from Stackoverflow.com suggests this for storing command line inputs as an array:
+class StoreAsArray(argparse._StoreAction):
+    # noinspection PyCompatibility
+    def __call__(self, parser, namespace, values, option_string=None):
+        values = values.split(';')
+        rows = len(values)
+        m = values[0].split(',')
+        i = 1
+        while i < rows:
+            n = values[i].split(',')
+            m = np.vstack((m,n))
+            i += 1
+        rows, cols = m.shape
+        #now " m" is the matrix that has everything in terms of a string
+        # to convert everything to a string:
+        new_a = np.zeros((rows, cols))
+        new_b = np.zeros(rows)
+        for j in range(rows):
+            if cols != 0:
+                for k in range(cols):
+                    new_a[j,k] = float((m[j,k]))
+            else:
+                new_b[j] = float(m[j])
+        if cols != 0:
+            values = new_a
+        else:
+            values = new_b
+
+        return super().__call__(parser, namespace, values, option_string)
+
 def warning(*objs):
     """Writes a message to stderr."""
     print("WARNING: ", *objs, file=sys.stderr)
@@ -28,11 +58,13 @@ def residual(A, B, guess, row, col): #function that calculates the residual erro
     r = math.sqrt(build)
     return r
 
+
+# noinspection PyPep8Naming
 def gauss_siedel(A, B, row, col, w):
     if w != 1.0:
-        function = print("Using the Gauss-Siedel method, the answer is:")
+        function = "Using the Gauss-Siedel method, the answer is:"
     else:
-        function = print("Using the Gauss method, the answer is:")
+        function = "Using the Gauss method, the answer is:"
     initial_guess = np.zeros(row)
     res = residual(A, B, initial_guess, row, col)
     x = initial_guess
@@ -47,7 +79,7 @@ def gauss_siedel(A, B, row, col, w):
     return function, x
 
 def jacobi(A, B, row, col):
-    function = print("Using the Jacobi method, the answer is:")
+    function = "Using the Jacobi method, the answer is:"
     initial_guess = np.zeros(row)
     res = residual(A, B, initial_guess, row, col)
     x = initial_guess
@@ -62,15 +94,34 @@ def jacobi(A, B, row, col):
     return function, x
 
 def matrix_calculator(A, B, row, col, solver_type):
-    if solver_type == "j": # J IS A PLACEHOLDER FOR COMMAND LINE PARSER "CHOICES" ISSUE RESOLUTION
-        state, answer = jacobi(A, B, row, col)
     if solver_type == "g": # G IS A PLACEHOLDER FOR COMMAND LINE PARSER "CHOICES" ISSUE RESOLUTION
         w = 1.0
         state, answer = gauss_siedel(A, B, row, col, w)
-    if solver_type == "s": # S IS A PLACEHOLDER FOR COMMAND LINE PARSER "CHOICES" ISSUE RESOLUTION
+    elif solver_type == "s": # S IS A PLACEHOLDER FOR COMMAND LINE PARSER "CHOICES" ISSUE RESOLUTION
         w = 1.6 #this number was chosen because it is the most efficient number for Gauss-Siedel method, according to Dr. Nagrath
         state, answer = gauss_siedel(A, B, row, col, w)
+    else:
+        # J IS A PLACEHOLDER FOR COMMAND LINE PARSER "CHOICES" ISSUE RESOLUTION
+        state, answer = jacobi(A, B, row, col)
+
     return state, answer
+
+def diagonally_dominant_check(A):
+    # For any of the solving methods used in this code, the matrix A must be diagonally dominant.
+    # This function will test to make sure that the matrix is diagonally dominant
+    row, col = np.shape(A)
+    max_value = np.zeros(row)
+    verdict = True # Assume True until proven "guilty"/ False
+    for i in range(row):
+        max_value[i] = A[i,i]
+        for j in range(col):
+            if A[i,j] > max_value[i]:
+                max_value[i] = 999
+
+    if 999 in max_value:
+        verdict = False # If the matrix is not diagonally dominant, the verdict is False; if it is DD, verdict is True
+
+    return verdict
 
 def parse_cmdline(argv):
     """
@@ -80,34 +131,7 @@ def parse_cmdline(argv):
     if argv is None:
         argv = sys.argv[1:]
 
-    #from Stackoverflow.com suggests this for storing command line inputs as an array:
-    class Store_as_array(argparse._StoreAction):
-        def __call__(self, parser, namespace, values, option_string=None):
-            values = values.split(';')
-            rows = len(values)
-            m = values[0].split(',')
-            i = 1
-            while i < rows:
-                n = values[i].split(',')
-                m = np.vstack((m,n))
-                i += 1
-            rows, cols = m.shape
-            #now " m" is the matrix that has everything in terms of a string
-            # to convert everything to a string:
-            newA = np.zeros((rows, cols))
-            newB = np.zeros((rows))
-            for j in range(rows):
-                if cols != 0:
-                    for k in range(cols):
-                        newA[j,k] = float((m[j,k]))
-                else:
-                    newB[j] = float(m[j])
-            if cols != 0:
-                values = newA
-            else:
-                values = newB
 
-            return super().__call__(parser, namespace, values, option_string)
 
     # initialize the parser object:
     parser = argparse.ArgumentParser()
@@ -119,9 +143,9 @@ def parse_cmdline(argv):
                         help="Use these options to help you choose a solver: j for Jacobi, g for Gauss, s for Gauss-Siedel. Jacobi is the default.",
                         default="j")
     parser.add_argument("A", help="This is the main A matrix, as in Ax=B. Format as: '1,2,3;4,5,6;7,8,9' to create this, where ; separates the rows and , separates the columns. Make sure that the number of columns in this matrix A are the same as the number of rows in matrix B. THIS MATRIX MUST BE DIAGONALLY DOMINANT FOR THESE METHODS TO WORK!",
-                        action=Store_as_array)
+                        action=StoreAsArray)
     parser.add_argument("B", help="This is the answer B matrix, as in Ax=B.  Format as: '1;2;3' to create this, where ; separates the rows. Make sure that the number of rows in this matrix A are the same as the number of columns in matrix A.",
-                        action=Store_as_array)
+                        action=StoreAsArray)
 
     args = None
     dimen_test = None
@@ -150,9 +174,12 @@ def main(argv=None):
         return ret
     #  print(canvas(args.no_attribution))
     m, n = np.shape(args.A)
-    statement, answer = matrix_calculator(args.A, args.B, m, n, args.solver)
-    statement
-    print(answer)
+    if diagonally_dominant_check(args.A) is False:
+        warning("Matrix must be diagonally dominant:", RuntimeWarning)
+    else:
+        statement, answer = matrix_calculator(args.A, args.B, m, n, args.solver)
+        print(statement)
+        print(answer)
     return 0  # success
 
 
