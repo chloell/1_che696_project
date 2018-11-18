@@ -13,7 +13,6 @@ import argparse
 import numpy as np
 import math
 
-
 #from Stackoverflow.com suggests this for storing command line inputs as an array:
 class StoreAsArray(argparse._StoreAction):
     # noinspection PyCompatibility
@@ -59,7 +58,6 @@ def residual(A, B, guess, row, col): #function that calculates the residual erro
     return r
 
 
-# noinspection PyPep8Naming
 def gauss_siedel(A, B, row, col, w):
     if w != 1.0:
         function = "Using the Gauss-Siedel method, the answer is:"
@@ -149,12 +147,13 @@ def parse_cmdline(argv):
 
     args = None
     dimen_test = None
+
     try: # makes sure that the Store_as_array function is working
         args = parser.parse_args(argv)
         assert isinstance(args.A, np.ndarray)
         assert isinstance(args.B, np.ndarray)
     except TypeError as t:
-        warning("Type of values stored in A and B arrays are not the same:", t)
+        warning("A and B must be of the same type:", t)
         parser.print_help()
         return args, 2
 

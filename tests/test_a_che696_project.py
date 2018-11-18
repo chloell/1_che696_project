@@ -8,45 +8,50 @@ import sys
 import unittest
 from contextlib import contextmanager
 from io import StringIO
+import logging
+
+# logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+DISABLE_REMOVE = logger.isEnabledFor(logging.DEBUG)
 
 #from matcalc import canvas
 from a_che696_project.matcalc import main, parse_cmdline
 
 
 class TestProject(unittest.TestCase):
-    def testNoArgs(self):
-        test_input = []
-        main(test_input)
+
+    def testNotEqualDimen(self):
+        test_input = ['5,-2,3;-3,9,1;2,-1,-7', '1;2']
+        parse_cmdline(test_input)
+        with capture_stderr(main, test_input) as output:
+            self.assertTrue("identical" in output)
+
+    def testNoSolver(self): # Testing to see if Jacobi works as the default
+        test_input = ['5,-2,3;-3,9,1;2,-1,-7', '1;2;3']
+        parse_cmdline(test_input)
         with capture_stdout(main, test_input) as output:
-            self.assertTrue("Using the" in output)
+            self.assertTrue("[ 0.57749612  0.45105771 -0.32800935]" in output)
 
-
-    def testNoSolver(self):
-        test_input = []
-        main(test_input)
-        with capture_stdout(main, test_input) as output:
-            self.assertTrue("Using the Gauss method" in output)
-
-    def testNotDiagDomMatrix(self):
+    def testNotDiagDomMatrix(self): # Testing to see if the matrix is diagonally dominant
         test_input = ['1,1,1;2,3,5;4,0,5', '1;2;3']
         parse_cmdline(test_input)
-        with capture_stdout(main, test_input) as output:
-            self.assertTrue("Matrix must be diagonally dominant" in output)
+        with capture_stderr(main, test_input) as output:
+            self.assertTrue("diagonally dominant" in output)
 
-    def testJacobi(self):
-        test_input = ['5,-2,3;-3,9,1;2,-1,-7' '1;2;3']
+    def testJacobi(self): # Testing to see if the Jacobi method yields the correct answer
+        test_input = ["-s", "j", '5,-2,3;-3,9,1;2,-1,-7', '1;2;3']
         parse_cmdline(test_input)
         with capture_stdout(main, test_input) as output:
             self.assertTrue("[ 0.57749612  0.45105771 -0.32800935]" in output)
 
-    def testGauss(self):
-        test_input = ["-s g '5,-2,3;-3,9,1;2,-1,-7' '1;2;3'"]
+    def testGauss(self): # Testing to see if the Gauss method yields the correct answer
+        test_input = ["-s", "g", '5,-2,3;-3,9,1;2,-1,-7', '1;2;3']
         parse_cmdline(test_input)
         with capture_stdout(main, test_input) as output:
             self.assertTrue("[ 0.57749612  0.45105771 -0.32800935]" in output)
 
-    def testSiedel(self):
-        test_input = ["-s s '5,-2,3;-3,9,1;2,-1,-7' '1;2;3'"]
+    def testSiedel(self): # Testing to see if the Gauss-Siedel method yields the correct answer
+        test_input = ["-s", "s", '5,-2,3;-3,9,1;2,-1,-7', '1;2;3']
         parse_cmdline(test_input)
         with capture_stdout(main, test_input) as output:
             self.assertTrue("[ 0.5776533   0.45030048 -0.32795644]" in output)
